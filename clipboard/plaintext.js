@@ -98,11 +98,11 @@ function Clipboard(mimeType) {
 				getTransferData: function(flavor) {
 					var className = flavor.getRepresentationClass().name;
 					if (className == "java.lang.String") {
-						return text;
+						return value;
 					} else if (className == "java.io.StringReader") {
-						return new StringReader(text);
+						return new StringReader(value);
 					} else if (className == "java.io.InputStream") {
-						return new StringBufferInputStream(text);
+						return new StringBufferInputStream(value);
 					}
 					throw new UnsupportedFlavorException(flavor);
 				}
