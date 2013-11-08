@@ -11,8 +11,6 @@ importPackage(java.awt.datatransfer);
 var htmlContent = htmlOf(window.selectedNodes[0], 0, 0, true);
 var html = "<html><body>" + htmlContent + "</body></html>";
 
-System.out.println(html);
-
 var clipboard = new Clipboard("text/html");
 clipboard.copy(html);
 
@@ -38,6 +36,13 @@ function htmlOf(node, headerLevel, currentIndex) {
 	itemizeTagset = getItemizeTagset(node);
 	if(itemizeTagset != null) {
 		tagset = itemizeTagset;
+	}
+
+	// ソースコード
+	// 背景色が#dcdcdcのものはソースコードとみなす
+	if(isSourceCode(node)) {
+		tagset = {startTag: "<pre class=\"prettyprint\">", endTag: "</pre>",
+				startChildTag: "", endChildTag: "", startChildListTag: "", endChildListTag: "", keepContentPTag: false}
 	}
 
 	// 本体の出力
@@ -102,6 +107,19 @@ function getItemizeTagset(node) {
 	return null;
 }
 
+// ソースコードかどうかを判別
+function isSourceCode(node) {
+	var bg = node.background;
+	if(bg == null) {
+		return false;
+	}
+	// #dcdcdcをソースコードとみなす
+	if(bg.red == bg.blue && bg.blue == bg.green && bg.red == 0xdc) {
+		return true;
+	}
+	return false;
+}
+
 // ノード自身のHTMLコンテンツの取得
 function htmlContentOf(node, keepContentPTag) {
 	if(keepContentPTag) {
@@ -112,13 +130,13 @@ function htmlContentOf(node, keepContentPTag) {
 	html = html.replace(startTagPattern, "");
 	
 	var endTagPattern = /<\/p>/g;
-	html = html.replace(endTagPattern, "");
+	html = html.replace(endTagPattern, "\n");
 	
 	return convertMacro(html);
 }
 
 function convertMacro(html) {
-	var specialChPattern = /\&[^;]+;/g;
+	var specialChPattern = /\&[^;]+FEFF;/g;
 	html = html.replace(specialChPattern, "");
 
 	// リンク対応
