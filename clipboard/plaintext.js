@@ -1,59 +1,89 @@
 ////////////////////////////////////////////////////////////////////
 // Plain Text+Clipboardスクリプト
-//   
 ////////////////////////////////////////////////////////////////////
 importPackage(java.lang);
 importPackage(java.util);
-importPackage(java.awt.datatransfer);
-importPackage(java.awt);
-importPackage(java.awt.event);
 importPackage(java.io);
-importPackage(java.util);
-importPackage(javax.swing);
-importPackage(javax.imageio);
+importPackage(java.awt);
+importPackage(java.awt.datatransfer);
 
 // Plain Text化します。
 // 見出し記号をArrayで指定し、Plain Text化したいノードを指定します。
-var text = headeredTextOf(["■", "▼", "-"], window.selectedNodes[0]);
+var headerSymbol = ["■", "▼", "-"];
+var text = textOf("", window.selectedNodes[0], 0, 0);
 
-var clipboard = new Clipboard();
+var clipboard = new Clipboard("text/plain");
 clipboard.copy(text);
 
-// Plain Text化する関数です。必要に応じて見出し記号をつけます。
-function headeredTextOf(headers, node) {
-	var r = headers[0] + node.text + "\n";
-	var childNodes = node.childNodes;
 
-	var nextHeaders = new Array();
-	for(var i = 1; i < headers.length; i ++) {
-		nextHeaders.push(headers[i]);
+// Plain Text化します。
+function textOf(indent, node, headerLevel, currentIndex) {
+	var r = "";
+	var childIndent = "  ";
+	var childHeaderLevel = headerLevel;
+
+	// 見出し
+	if(isHeader(node)) {
+		childHeaderLevel = headerLevel + 1;
+		if(headerLevel < headerSymbol.length) {
+			r += headerSymbol[headerLevel];		
+		}
+		childIndent = "";
+	}else{
+		childHeaderLevel = 0;
 	}
+
+	// (1), 1.など
+	itemizeRenderer = getItemizeRenderer(node);
+	if(itemizeRenderer != null) {
+		r += indent + itemizeRenderer(currentIndex);
+	}
+
+	// 本体の出力
+	if(r.length == 0) {
+		r += indent;
+	}
+	r += node.text + "\n";
+	var childNodes = node.childNodes;
+	var index = 0;
 	for(var i = 0; i < childNodes.length; i ++) {
-		if(nextHeaders.length == 0) {
-			r += textOf("  ", childNodes[i]);
-		}else{
-			r += headeredTextOf(nextHeaders, childNodes[i]);
+		var childNode = childNodes[i];
+		r += textOf(indent + childIndent, childNode, childHeaderLevel, index);
+		if(childNode.nodeType == "topic") {
+			index ++;			
 		}
 	}
 	return r;
 }
 
-// Plain Text化します。
-function textOf(indent, node) {
-	var r = indent + " " + node.text + "\n";
-	var childNodes = node.childNodes;
-	for(var i = 0; i < childNodes.length; i ++) {
-		r += textOf(indent + "  ", childNodes[i]);
+// 見出しかどうかを判別(n.n.n.の形式のみ見出しと判別)
+function isHeader(node) {
+	// topicTypeの定数
+	// http://beitel.carabiner.jp/javadoc/jp/carabiner/treeeditor/TreeEditorConst.html#NUMBER_SECTION
+	if(node.topicType == 1 && node.nodeType == "topic") {
+		return true;
 	}
-	return r;
+	return false;
+}
+
+// 箇条書きのレンダリングロジックの取得
+function getItemizeRenderer(node) {
+	if(node.topicType == 11 && node.nodeType == "topic") {
+		// (n)
+		return function(index) {
+					// 1ベースのインデックスに変更
+					var displayIndex = index + 1;
+					return "(" + displayIndex + ")";
+				};
+	}
+	return null;
 }
 
 // Clipboardの処理を実装します。
-function Clipboard() {
+function Clipboard(mimeType) {
 
 	this.copy = function(value) {
 			var flavors = new ArrayList();
-			var mimeType = "text/plain";
 			flavors.add(new DataFlavor(mimeType + ";class=java.lang.String"));
 			flavors.add(new DataFlavor(mimeType + ";class=java.io.Reader"));
 			flavors.add(new DataFlavor(mimeType + ";charset=unicode;class=java.io.InputStream"));
