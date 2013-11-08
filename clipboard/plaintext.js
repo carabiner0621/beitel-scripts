@@ -12,6 +12,7 @@ importPackage(java.awt.datatransfer);
 var headerSymbol = ["■", "▼", "-"];
 var text = textOf("", window.selectedNodes[0], 0, 0);
 
+// 得られた文字列をクリップボードへ貼りつけます。
 var clipboard = new Clipboard("text/plain");
 clipboard.copy(text);
 

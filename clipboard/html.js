@@ -11,6 +11,7 @@ importPackage(java.awt.datatransfer);
 var htmlContent = htmlOf(window.selectedNodes[0], 0, 0, true);
 var html = "<html><body>" + htmlContent + "</body></html>";
 
+// 得られた文字列をクリップボードへ貼りつけます。
 var clipboard = new Clipboard("text/html");
 clipboard.copy(html);
 
