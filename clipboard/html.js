@@ -120,6 +120,10 @@ function htmlContentOf(node, keepContentPTag) {
 function convertMacro(html) {
 	var specialChPattern = /\&[^;]+;/g;
 	html = html.replace(specialChPattern, "");
+
+	// リンク対応
+	var linkPattern = /\[([^\]]+)\]\s*\(([^\)]+)\)/g;
+	html = html.replace(linkPattern, "<a href=\"$2\">$1</a>");
 	return html;
 }
 
