@@ -15,6 +15,8 @@ var html = "<html><body>" + htmlContent + "</body></html>";
 var clipboard = new Clipboard("text/html");
 clipboard.copy(html);
 
+System.out.println("コピーしました。");
+
 
 // HTML化します。
 function htmlOf(node, headerLevel, currentIndex) {

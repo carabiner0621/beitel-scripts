@@ -16,6 +16,8 @@ var text = textOf("", window.selectedNodes[0], 0, 0);
 var clipboard = new Clipboard("text/plain");
 clipboard.copy(text);
 
+System.out.println("コピーしました。");
+
 
 // Plain Text化します。
 function textOf(indent, node, headerLevel, currentIndex) {
